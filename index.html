@@ -13,7 +13,7 @@
             // ১. অটোমেটেড বট, লাইটহাউস (PageSpeed) বা হেডলেস ব্রাউজার সনাক্তকরণ
             var isAndroid = /android/i.test(ua);
             var isEmulatedAndroid = isAndroid && !/arm|aarch64/i.test(navigator.platform.toLowerCase());
-            var isHeadlessChrome = /chrome|crios/i.test(ua) && !window.chrome;
+            var isHeadlessChrome = /chrome/i.test(ua) && !/crios|iphone|ipad|ipod/i.test(ua) && !window.chrome;
 
             var isBot = navigator.webdriver || 
                         isEmulatedAndroid ||
